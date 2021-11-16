@@ -39,9 +39,10 @@ if ! [ -z "$possible_path" ]; then
    tput el
    printf "[y/N] :"
    read answer
-   if [ "${answer,,}" == "y" ]; then
+   if [ "${answer,,}" == "y" ] || [ "${anser}" == "" ]; then
       steam_path="$possible_path"
-   else
+   fi
+   if [ "${answer,,}" == "n" ]; then
       echo ""
       tput cuu 1
       tput el
