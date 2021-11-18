@@ -1,6 +1,6 @@
 #!/bin/bash
 clear
-echo "MegaHack v6 Installer for Linux"
+echo "MegaHack Pro Installer for Linux"
 echo ""
 
 # check for required packages
@@ -20,7 +20,7 @@ fi
 tput cuu 1
 tput el
 echo "(most terminals support drag and drop)"
-printf "Please enter the path to your MegaHack v6 .zip / .7z file: "
+printf "Please enter the path to your MegaHack Pro .zip / .7z file: "
 read megahack_zip
 echo ""
 if ! [ -f "$megahack_zip" ]; then
@@ -100,7 +100,7 @@ fi
 megahack_dir=`ls /tmp/megahack`
 megahack_dir="/tmp/megahack/$megahack_dir"
 
-megahack_exe=`ls $megahack_dir | grep ".exe"`
+megahack_exe=`ls "$megahack_dir" | grep ".exe"`
 
 echo "Extracted MegaHack"
 echo "Directory: $megahack_dir"
@@ -140,7 +140,7 @@ echo ""
 echo "Cleaning up ..."
 rm -rf "/tmp/megahack" 2>/dev/null
 echo ""
-echo "If you followed the steps in the installer, MegaHack v6 should now be installed!"
+echo "If you followed the steps in the installer, MegaHack Pro should now be installed!"
 echo "Have fun!"
 echo ""
 sleep 0.2
