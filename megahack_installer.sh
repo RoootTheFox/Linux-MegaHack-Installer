@@ -134,7 +134,15 @@ echo "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe" | sed 's:
 echo ""
 
 STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${steam_path}/steamapps/common/${proton_dir}/proton" runinprefix "${megahack_dir}/${megahack_exe}"
-clear
+#clear
+
+# this allows megahack v7 to load
+cd "${steam_path}/steamapps/common/Geometry Dash"
+rm libcurl.dll
+echo "Downloading v6 libcurl.dll"
+wget -O "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
+cp "/tmp/megahack/libcurl.dll" .
+mv hackproldr.dll absoluteldr.dll
 
 echo ""
 echo "Cleaning up ..."
