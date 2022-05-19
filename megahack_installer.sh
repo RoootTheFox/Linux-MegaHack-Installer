@@ -3,11 +3,15 @@ clear
 echo "MegaHack Pro Installer for Linux"
 echo ""
 
+if [ "$DEBUG" == "1" ]; then
+   echo "Debug logging enabled!"
+fi
+
 # check for required packages
 missing_packages=false
 if ! hash unzip 2>/dev/null; then echo "unzip is not installed!"; missing_packages=true; fi
 if ! hash 7z 2>/dev/null; then echo "p7zip is not installed!"; missing_packages=true; fi
-if ! hash xclip 2>/dev/null; then echo "xclip is not installed!"; missing_packages=true; fi
+if ! hash xclip 2>/dev/null; then echo "xclip is not installed, you will have to manually copy the MegaHack path!"; fi
 
 echo ""
 if [ $missing_packages == true ] ; then
@@ -17,11 +21,8 @@ if [ $missing_packages == true ] ; then
    exit 0
 fi
 
-tput cuu 1
-tput el
 echo "(most terminals support drag and drop)"
-printf "Please enter the path to your MegaHack Pro .zip / .7z file: "
-read megahack_zip
+read -p "Please enter the path to your MegaHack Pro .zip / .7z file: " megahack_zip
 echo ""
 if ! [ -f "$megahack_zip" ]; then
    echo "Could not find the file you specified!"
@@ -29,33 +30,34 @@ if ! [ -f "$megahack_zip" ]; then
 fi
 
 echo "Finding your steam path ..."
-possible_path=`find ~ -name 'steamapps' | grep -v compatdata | sed 's/steamapps//g'`
+if [ -f "$HOME/.steampid" ]; then
+   steam_pid=`cat $HOME/.steampid`
+   echo "Steam PID: $steam_pid"
+   possible_path=`readlink -e /proc/$steam_pid/cwd`
+fi
+
+if ! [ -d "$possible_path" ]; then
+   echo "Steam is not running, couldn't find directory from process"
+   echo "Searching manually, this can take a few seconds ..."
+   possible_path=`find ~ -name 'steamapps' | grep -v compatdata | sed 's/steamapps//g'`
+fi
 
 steam_path=""
 if ! [ -z "$possible_path" ]; then
    echo "Is this your Steam path?: $possible_path"
    echo ""
-   tput cuu 1
-   tput el
-   printf "[y/N] :"
-   read answer
-   if [ "${answer,,}" == "y" ] || [ "${anser}" == "" ]; then
+   read -p "[Y/n] :" answer
+   if [ "${answer,,}" == "y" ] || [ "${answer}" == "" ]; then
       steam_path="$possible_path"
    fi
    if [ "${answer,,}" == "n" ]; then
       echo ""
-      tput cuu 1
-      tput el
-      printf "Please enter your Steam path: "
-      read in_path
+      read -p "Please enter your Steam path: " in_path
       steam_path="$in_path"
    fi
 else
    echo ""
-   tput cuu 1
-   tput el
-   printf "Please enter your Steam path: "
-   read in_path
+   read -p "Please enter your Steam path: " in_path
    steam_path="$in_path"
 fi
 
@@ -67,16 +69,15 @@ if [ -d "${steam_path}/steamapps/common/Proton - Experimental" ]; then proton_di
 if [ -d "${steam_path}/steamapps/common/Proton 7.0" ]; then proton_dir="Proton 7.0"; fi # preferred version; more stable
 
 if [ ! -d "${steam_path}/steamapps/common/${proton}" ]; then
-   echo "You dont have Proton Experimental or Proton 6.3 installed!"
-   echo "Please set Geometry Dash to use Proton 6.3 or Experimental"
-   echo "To do that, go to GD's Steam page, click \"Properties\" > \"Compatibility\", enable \"Force the use of a specific Steam Play compatibility tool\" and select Proton 6.3 or Proton Experimental!"
+   echo "You dont have Proton Experimental or Proton 7.0 installed!"
+   echo "Please set Geometry Dash to use Proton 7.0 or Experimental"
+   echo "To do that, go to GD's Steam page, click \"Properties\" > \"Compatibility\", enable \"Force the use of a specific Steam Play compatibility tool\" and select Proton 7.0 or Proton Experimental!"
    echo "You have to start Geometry Dash at least once after changing it for steam to download the new Proton version."
    exit 1
 fi
 
 echo "Using ${proton_dir}"
 
-sleep 2
 # clear temporary files
 rm -rf "/tmp/megahack" 2>/dev/null
 mkdir "/tmp/megahack" 2>/dev/null
@@ -98,9 +99,24 @@ fi
 
 # find out where megahack is
 megahack_dir=`ls /tmp/megahack`
+if [ "$DEBUG" == "1" ]; then
+   echo "-- contents of /tmp/megahack --"
+   echo "$megahack_dir"
+   echo "-- -- -- -- -- - -- -- -- -- --"
+fi
+
 megahack_dir="/tmp/megahack/$megahack_dir"
 
-megahack_exe=`ls "$megahack_dir" | grep ".exe"`
+megahack_dir_contents=`ls "$megahack_dir"`
+
+if [ "$DEBUG" == "1" ]; then
+   echo "MegaHack Directory: $megahack_dir"
+   echo " -- Contents --"
+   echo "$megahack_dir_contents"
+   echo " -- -- -- -- --"
+fi
+
+megahack_exe=`echo "$megahack_dir_contents" | grep ".exe"`
 
 echo "Extracted MegaHack"
 echo "Directory: $megahack_dir"
@@ -109,32 +125,35 @@ echo ""
 
 echo " - Starting installation process - "
 
-echo "Setting exe path to our GD exe ..."
-# this sets the predefined path to geometry dash in the megahack installer
-# sometimes it works sometimes it doesnt for some reason
-reg_out=/tmp/megahack/tmp.reg
-echo "Windows Registry Editor Version 5.00" > $reg_out
-echo "" >> $reg_out
-echo "[HKEY_CURRENT_USER\Software\QtProject\OrganizationDefaults\FileDialog]" >> $reg_out
-echo "\"history\"=hex(7):00,00" >> $reg_out
-echo "\"lastVisited\"=\"file:///Z:${steam_path}/steamapps/common/Geometry Dash\"" >> $reg_out
-
-echo "cd ${steam_path}/steamapps/compatdata/322170/pfx"
+if [ "$DEBUG" == "1" ]; then echo "cd ${steam_path}/steamapps/compatdata/322170/pfx"; fi
 cd "${steam_path}/steamapps/compatdata/322170/pfx"
 
 STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${steam_path}/steamapps/common/${proton_dir}/proton" runinprefix regedit /tmp/megahack/tmp.reg
 
-clear
+if ! [ "$DEBUG" == "1" ]; then clear; fi
 echo "Starting MegaHack installer ..."
 echo ""
-echo "To install, press CTRL+V when you are in the exe selection window."
-# copy path to gd exe in case the regedit above didnt work
-echo "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe" | sed 's:/:\\:g'
-echo "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe" | sed 's:/:\\:g' | xclip -selection c
+echo "To install, press CTRL+V when you are in the exe selection window and click \"Open\""
+
+# copy path to gd exe
+gd_exe_path=$(echo "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe" | sed 's:/:\\:g')
+
+echo "Path to GD exe: $gd_exe_path"
+
+if hash axclip 2>/dev/null; then
+   echo "$gd_exe_path" | xclip -selection c
+   echo "Copied path to clipboard!"
+else
+   echo "xclip is not installed, please copy the path manually"
+fi
 echo ""
 
+if [ "$DEBUG" == "1" ]; then
+   echo "Starting MegaHack:"
+   echo "STEAM_COMPAT_DATA_PATH=\"${steam_path}/steamapps/compatdata/322170\" WINEPREFIX=\"$PWD\" \"${steam_path}/steamapps/common/${proton_dir}/proton\" runinprefix \"${megahack_dir}/${megahack_exe}\""
+fi
+
 STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${steam_path}/steamapps/common/${proton_dir}/proton" runinprefix "${megahack_dir}/${megahack_exe}"
-#clear
 
 # this allows megahack v7 to load
 cd "${steam_path}/steamapps/common/Geometry Dash"
