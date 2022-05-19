@@ -64,7 +64,7 @@ echo "Using Steam path: $steam_path"
 
 # find proton version
 if [ -d "${steam_path}/steamapps/common/Proton - Experimental" ]; then proton_dir="Proton - Experimental"; fi
-if [ -d "${steam_path}/steamapps/common/Proton 6.3" ]; then proton_dir="Proton 6.3"; fi # preferred version; more stable
+if [ -d "${steam_path}/steamapps/common/Proton 7.0" ]; then proton_dir="Proton 7.0"; fi # preferred version; more stable
 
 if [ ! -d "${steam_path}/steamapps/common/${proton}" ]; then
    echo "You dont have Proton Experimental or Proton 6.3 installed!"
