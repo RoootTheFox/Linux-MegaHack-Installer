@@ -130,7 +130,7 @@ echo " - Starting installation process - "
 if [ "$DEBUG" == "1" ]; then echo "cd ${steam_path}/steamapps/compatdata/322170/pfx"; fi
 cd "${steam_path}/steamapps/compatdata/322170/pfx"
 
-STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${steam_path}/steamapps/common/${proton_dir}/proton" runinprefix regedit /tmp/megahack/tmp.reg
+STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${proton_dir}/proton" runinprefix regedit /tmp/megahack/tmp.reg
 
 if ! [ "$DEBUG" == "1" ]; then clear; fi
 echo "Starting MegaHack installer ..."
