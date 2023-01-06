@@ -65,14 +65,16 @@ steam_path=${steam_path%/}
 echo "Using Steam path: $steam_path"
 
 # find proton version
-if [ -d "${steam_path}/steamapps/common/Proton - Experimental" ]; then proton_dir="Proton - Experimental"; fi
-if [ -d "${steam_path}/steamapps/common/Proton 7.0" ]; then proton_dir="Proton 7.0"; fi # preferred version; more stable
+if [ -d "${steam_path}/steamapps/common/Proton - Experimental" ]; then proton_dir="${steam_path}/steamapps/common/Proton - Experimental"; fi
+if [ -d "${steam_path}/steamapps/common/Proton 7.0" ]; then proton_dir="${steam_path}/steamapps/common/Proton 7.0"; fi
+if [ -d "${steam_path}/compatibilitytools.d/GE-Proton7-43" ]; then proton_dir="${steam_path}/compatibilitytools.d/GE-Proton7-43"; fi # preferred version; more stable
 
-if [ ! -d "${steam_path}/steamapps/common/${proton}" ]; then
-   echo "You dont have Proton Experimental or Proton 7.0 installed!"
-   echo "Please set Geometry Dash to use Proton 7.0 or Experimental"
+if [ ! -d "${proton_dir}" ]; then
+   echo "You dont have Proton Experimental, Proton 7.0 or GE-Proton7-43 installed!"
+   echo "Please set Geometry Dash to use either one of those versions (GE preferred)"
    echo "To do that, go to GD's Steam page, click \"Properties\" > \"Compatibility\", enable \"Force the use of a specific Steam Play compatibility tool\" and select Proton 7.0 or Proton Experimental!"
-   echo "You have to start Geometry Dash at least once after changing it for steam to download the new Proton version."
+   echo "Proton GE has to be installed manually, use Proton 7.0 or Experimental if you are unsure how to do that."
+   echo "You have to start Geometry Dash at least once after changing it for Steam to download the new Proton version."
    exit 1
 fi
 
@@ -140,7 +142,7 @@ gd_exe_path=$(echo "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.
 
 echo "Path to GD exe: $gd_exe_path"
 
-if hash axclip 2>/dev/null; then
+if hash xclip 2>/dev/null; then
    echo "$gd_exe_path" | xclip -selection c
    echo "Copied path to clipboard!"
 else
@@ -148,20 +150,32 @@ else
 fi
 echo ""
 
-if [ "$DEBUG" == "1" ]; then
-   echo "Starting MegaHack:"
-   echo "STEAM_COMPAT_DATA_PATH=\"${steam_path}/steamapps/compatdata/322170\" WINEPREFIX=\"$PWD\" \"${steam_path}/steamapps/common/${proton_dir}/proton\" runinprefix \"${megahack_dir}/${megahack_exe}\""
+echo "WARNING! If you want to install MegaHack v7, you will either have to"
+echo "use MHv6's libcurl.dll OR add 'WINEDLLOVERRIDES=\"Xinput9_1_0=n,b\" %command%'"
+echo "to Geometry Dash's start options in Steam OR MEGAHACK WON'T WORK!"
+echo "Do you wan't to use v6's libcurl.dll method?"
+read -p "[Y/n] :" answer_libcurl
+   if [ "${answer_libcurl,,}" == "y" ] || [ "${answer_libcurl}" == "" ]; then
+      use_v6_libcurl=1
 fi
 
-STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${steam_path}/steamapps/common/${proton_dir}/proton" runinprefix "${megahack_dir}/${megahack_exe}"
+if [ "$DEBUG" == "1" ]; then
+   echo "Starting MegaHack:"
+   echo "STEAM_COMPAT_DATA_PATH=\"${steam_path}/steamapps/compatdata/322170\" WINEPREFIX=\"$PWD\" \"${proton_dir}/proton\" runinprefix \"${megahack_dir}/${megahack_exe}\""
+fi
 
-# this allows megahack v7 to load
-cd "${steam_path}/steamapps/common/Geometry Dash"
-rm libcurl.dll
-echo "Downloading v6 libcurl.dll"
-wget -O "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
-cp "/tmp/megahack/libcurl.dll" .
-mv hackproldr.dll absoluteldr.dll
+STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${proton_dir}/proton" runinprefix "${megahack_dir}/${megahack_exe}"
+
+if [ "$use_v6_libcurl" == "1" ]; then
+   echo "Warning: using v6's libcurl.dll to load!"
+   # this allows megahack v7 to load
+   cd "${steam_path}/steamapps/common/Geometry Dash"
+   rm libcurl.dll
+   echo "Downloading v6 libcurl.dll"
+   wget -O "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
+   cp "/tmp/megahack/libcurl.dll" .
+   mv hackproldr.dll absoluteldr.dll
+fi
 
 echo ""
 echo "Cleaning up ..."
@@ -170,5 +184,6 @@ echo ""
 echo "If you followed the steps in the installer, MegaHack Pro should now be installed!"
 echo "Have fun!"
 echo ""
+
 sleep 0.2
 exit 0
