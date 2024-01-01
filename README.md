@@ -25,16 +25,17 @@ If that does not work then you're gonna need to manually type your path.
 
 If you have the file in your Downloads folder then your path should look something like this:
 `/home/YOUR_USERNAME/Downloads/YOUR_MEGAHACK_INSTALLER.zip`
-Remplace YOUR_USERNAME and YOUR_MEGAHACK_INSTALLER.zip to your actual user and megahack folder.
-If you installed it somewhere else make sure to change Downloads to wherever your downloaded your megahack .zip folder
+Replace YOUR_USERNAME and YOUR_MEGAHACK_INSTALLER.zip to your actual user and MegaHack.
+If you installed it somewhere else make sure to change Downloads to wherever your downloaded your MegaHack installer.zip
 
 After that, the installer will automatically find your steam path and confirm.
 If it isn't your steam path, then you'll need to manually type it in.
 
-The installer will also ask you if you want to use v6's libcurl.dll method.
-For most recent versions of megahack (v7/v8), you'll need it.
+The installer will then ask you if you want to use v6's libcurl.dll method.
+The libcurl method is easier (and faster) to set up, but it *WILL* break when MegaHack transitions to [Geode](https://geode-sdk.org/) which it eventually will.
+ - for v6 libcurl.dll users: when MegaHack transitions to Geode, you will have to Verify Files for GD in Steam.
 
-The Megahack installer will show up, follow the megahack instructions to install megahack and you should be good to go!
+The Megahack installer will show up, follow the MegaHack instructions to install and you should be good to go!
 
 **This script has been made and tested on Arch Linux, I dont know if it will work anywhere else. Please try it no matter what distro you use and [report any issues you find](https://github.com/RoootTheFox/Linux-MegaHack-Installer/issues)!**<br>
 Contributions are always welcome!
