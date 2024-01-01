@@ -30,19 +30,19 @@ fi
 
 echo "Finding your steam path ..."
 if [ -f "$HOME/.steampid" ]; then
-   steam_pid=`cat $HOME/.steampid`
+   steam_pid=$(cat "$HOME/.steampid")
    echo "Steam PID: $steam_pid"
-   possible_path=`readlink -e /proc/$steam_pid/cwd`
+   possible_path=$(readlink -e "/proc/$steam_pid/cwd")
 fi
 
 if ! [ -d "$possible_path" ]; then
    echo "Steam is not running, couldn't find directory from process"
    echo "Searching manually, this can take a few seconds ..."
-   possible_path=`find ~ -name 'steamapps' | grep -v compatdata | sed 's/steamapps//g'`
+   possible_path=$(find ~ -name 'steamapps' | grep -v compatdata | sed 's/steamapps//g')
 fi
 
 steam_path=""
-if ! [ -z "$possible_path" ]; then
+if [ -n "$possible_path" ]; then
    echo "Is this your Steam path?: $possible_path"
    echo ""
    read -p "[Y/n] :" answer
@@ -94,7 +94,7 @@ else
 fi
 
 # find out where megahack is
-megahack_dir=`ls /tmp/megahack`
+megahack_dir=$(ls /tmp/megahack)
 if [ "$DEBUG" == "1" ]; then
    echo "-- contents of /tmp/megahack --"
    echo "$megahack_dir"
@@ -103,7 +103,7 @@ fi
 
 megahack_dir="/tmp/megahack/$megahack_dir"
 
-megahack_dir_contents=`ls "$megahack_dir"`
+megahack_dir_contents=$(ls "$megahack_dir")
 
 if [ "$DEBUG" == "1" ]; then
    echo "MegaHack Directory: $megahack_dir"
@@ -112,7 +112,7 @@ if [ "$DEBUG" == "1" ]; then
    echo " -- -- -- -- --"
 fi
 
-megahack_exe=`echo "$megahack_dir_contents" | grep ".exe"`
+megahack_exe=$(echo "$megahack_dir_contents" | grep ".exe")
 
 echo "Extracted MegaHack"
 echo "Directory: $megahack_dir"
