@@ -41,6 +41,12 @@ if ! [ -d "$possible_path" ]; then
    possible_path=$(find ~ -name 'steamapps' | grep -v compatdata | sed 's/steamapps//g')
 fi
 
+function prompt_steam_path() {
+   echo ""
+   read -p "Please enter your Steam path: " in_path
+   steam_path="$in_path"
+}
+
 steam_path=""
 if [ -n "$possible_path" ]; then
    echo "Is this your Steam path?: $possible_path"
@@ -50,14 +56,10 @@ if [ -n "$possible_path" ]; then
       steam_path="$possible_path"
    fi
    if [ "${answer,,}" == "n" ]; then
-      echo ""
-      read -p "Please enter your Steam path: " in_path
-      steam_path="$in_path"
+      prompt_steam_path
    fi
 else
-   echo ""
-   read -p "Please enter your Steam path: " in_path
-   steam_path="$in_path"
+   prompt_steam_path
 fi
 
 steam_path=${steam_path%/}
