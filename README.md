@@ -1,6 +1,6 @@
 # Linux MegaHack Installer
 
-Install script to install MegaHack v6 on Linux
+Install script to install MegaHack on Linux
 
 ## Requirements
 
