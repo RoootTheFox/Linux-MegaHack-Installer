@@ -10,7 +10,6 @@ fi
 # check for required packages
 missing_packages=false
 if ! hash unzip 2>/dev/null; then echo "unzip is not installed!"; missing_packages=true; fi
-if ! hash 7z 2>/dev/null; then echo "p7zip is not installed!"; missing_packages=true; fi
 if ! hash xclip 2>/dev/null; then echo "xclip is not installed, you will have to manually copy the MegaHack path!"; fi
 
 echo ""
@@ -22,7 +21,7 @@ if [ $missing_packages == true ] ; then
 fi
 
 echo "(most terminals support drag and drop)"
-read -p "Please enter the path to your MegaHack Pro .zip / .7z file: " megahack_zip
+read -p "Please enter the path to your MegaHack Pro .zip file: " megahack_zip
 echo ""
 if ! [ -f "$megahack_zip" ]; then
    echo "Could not find the file you specified!"
@@ -90,13 +89,8 @@ if [[ $megahack_zip == *.zip ]]; then
    echo "zip"
    unzip "$megahack_zip" -d /tmp/megahack
 else
-   if [[ $megahack_zip == *.7z ]]; then
-      echo "7z"
-      7z x "$megahack_zip" -o/tmp/megahack
-   else
-      echo "unsupported file type"
-      exit
-   fi
+   echo "unsupported file type - are you sure you're selecting a .zip file?"
+   exit
 fi
 
 # find out where megahack is
