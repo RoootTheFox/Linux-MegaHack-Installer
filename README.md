@@ -4,7 +4,7 @@ Install script to install MegaHack on Linux
 
 ## Requirements
 
-- You need the following packages: unzip, p7zip, xclip
+- You need the following packages: unzip, (optional: xclip)
 - You need a paid copy of MegaHack
 
 ## Usage
