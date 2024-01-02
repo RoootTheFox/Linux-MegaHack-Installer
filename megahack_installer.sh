@@ -76,20 +76,34 @@ echo "Using Steam path: $steam_path"
 
 # find proton version
 config_file="${steam_path}/steamapps/compatdata/322170/config_info"
-proton_dir=$(sed -n '2p' "$config_file") # get second line of config file
-temp_dir="$proton_dir"
-while true; do
-   current_directory=$(dirname "$temp_dir")
-   if [[ "$current_directory" =~ .*/steamapps/common$ ]] || [[ "$current_directory" =~ .*/compatibilitytools.d$ ]]; then
-      proton_dir="$temp_dir"
-      break
-   fi
-   if [[ "$current_directory" == "/" ]] || [[ "$current_directory" == "~/" ]]; then
-      echo "Could not find Proton directory: $proton_dir within config: $config_file"
-      exit 1
-   fi
-   temp_dir="$current_directory"
-done
+found=false
+
+while IFS= read -r line; do
+    temp_dir="$line"
+    declare -A visited_paths
+
+    while [[ "$temp_dir" != "/" ]] && [[ "$temp_dir" != "~/" ]]; do
+        [[ -n ${visited_paths["$temp_dir"]} ]] && break # catch other loops
+        visited_paths["$temp_dir"]=1
+
+        current_directory=$(dirname "$temp_dir")
+        if [[ "$current_directory" =~ .*/steamapps/common$ ]] || [[ "$current_directory" =~ .*/compatibilitytools.d$ ]]; then
+            if [[ -f "$temp_dir/proton" ]]; then
+                proton_dir="$temp_dir"
+                found=true
+                break
+            fi
+        fi
+        temp_dir="$current_directory"
+    done
+done < "$config_file"
+
+if [[ "$found" == true ]]; then
+    echo "Proton directory found: $proton_dir"
+else
+    echo "Could not find Proton directory within config: $config_file"
+    exit 1
+fi
 
 
 echo "Using Proton: ${proton_dir}"
