@@ -27,8 +27,8 @@ If you have the file in your Downloads folder then your path should look somethi
 `/home/YOUR_USERNAME/Downloads/YOUR_MEGAHACK_INSTALLER.zip`
 
 > [!IMPORTANT]
-> Replace YOUR\*USERNAME and YOUR*MEGAHACK_INSTALLER.zip to your actual user and MegaHack.<br>
-> If you installed it somewhere else make sure to change \_Downloads* to wherever you downloaded your MegaHack installer.zip.<br>
+> Replace YOUR_USERNAME and YOUR_MEGAHACK_INSTALLER.zip to your actual user and MegaHack.<br>
+> If you installed it somewhere else make sure to change _Downloads_ to wherever you downloaded your MegaHack installer.zip.<br>
 > After that, the installer will automatically find your steam path and confirm.
 > If it isn't your steam path, then you'll need to manually type it in.
 
