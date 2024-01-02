@@ -21,12 +21,21 @@ if [ $missing_packages == true ] ; then
 fi
 
 echo "(most terminals support drag and drop)"
-read -p "Please enter the path to your MegaHack Pro .zip file: " megahack_zip
+
+# if fzf is installed, use it
+if hash fzf 2>/dev/null; then
+    megahack_zip=$(fzf --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip file: ")
+else
+    read -p "Please enter the path to your MegaHack .zip file: " megahack_zip
+fi
+
 echo ""
 if ! [ -f "$megahack_zip" ]; then
    echo "Could not find the file you specified!"
    exit
 fi
+
+megahack_zip=$(realpath "$megahack_zip")
 
 echo "Finding your steam path ..."
 if [ -f "$HOME/.steampid" ]; then
