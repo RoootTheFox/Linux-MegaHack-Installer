@@ -71,6 +71,13 @@ fi
 if hash fzf 2>/dev/null; then
     pdir=$(pwd)
     cd ~ || cd_fail # we want fzf to use the home directory
+
+    if hash fd 2>/dev/null; then
+        export FZF_DEFAULT_COMMAND="fd --extension=zip"
+    else
+        export FZF_DEFAULT_COMMAND="find . -iname '*.zip'"
+    fi
+
     megahack_zip=$(fzf -e --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip file: ")
     megahack_zip=$(realpath "$megahack_zip")
     cd "$pdir" || cd_fail
