@@ -15,25 +15,25 @@ BOLD_YELLOW="\033[1;33m"
 # logging functions
 error() {
 	if [ "$2" == "1" ]; then
-		echo -e "        ${RED}$1${RESET}"
+		printf "        ${RED}%s${RESET}\n" "$1"
 	else
-		echo -e "${BOLD_RED}(error)${RED} $1${RESET}"
+		printf "${BOLD_RED}(error)${RED} %s${RESET}\n" "$1"
 	fi
 }
 
 fatal() {
         if [ "$2" == "1" ]; then
-                echo -e "        ${RED}$1${RESET}"
+                printf "        ${RED}%s${RESET}\n" "$1"
         else
-                echo -e "${BOLD_RED}(fatal)${RED} $1${RESET}"
+                printf "${BOLD_RED}(fatal)${RED} %s${RESET}\n" "$1"
         fi
 
 	exit 1
 }
 
-warn() { echo -e "${BOLD_YELLOW}(warn)${YELLOW} $1${RESET}"; }
+warn() { printf "${BOLD_YELLOW}(warn)${YELLOW} %s${RESET}\n" "$1"; }
 
-info() { echo -e "${BOLD_CYAN}(info)${CYAN} $1${RESET}"; }
+info() { printf "${BOLD_CYAN}(info)${CYAN} %s${RESET}\n" "$1"; }
 
 cd_fail() {
 	error "failed to change directory - line $(caller)"
@@ -42,13 +42,13 @@ cd_fail() {
 
 success() {
 	if [ "$2" == "1" ]; then
-		echo -e "          ${LIME}$1${RESET}"
+		printf "          ${LIME}%s${RESET}\n" "$1"
 	else
-		echo -e "${BOLD_LIME}(success)${LIME} $1${RESET}"
+		printf "${BOLD_LIME}(success)${LIME} %s${RESET}\n" "$1"
 	fi
 }
 
-printf "${LIME}MegaHack Installer for Linux${RESET}\n"
+printf "${LIME}%s${RESET}\n" "MegaHack Installer for Linux"
 
 if [ "$DEBUG" == "1" ]; then
    info "Debug logging enabled!"
