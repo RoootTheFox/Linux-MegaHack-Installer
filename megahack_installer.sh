@@ -196,6 +196,10 @@ fi
 
 megahack_exe=$(echo "$megahack_dir_contents" | grep ".exe")
 
+if [ -z "$megahack_exe" ]; then
+	fatal "there's no executable in the provided zip file!"
+fi
+
 success "Extracted MegaHack"
 info "Directory: $megahack_dir"
 info "Installer Executable: $megahack_exe"
