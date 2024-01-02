@@ -64,20 +64,24 @@ steam_path=${steam_path%/}
 echo "Using Steam path: $steam_path"
 
 # find proton version
-if [ -d "${steam_path}/steamapps/common/Proton - Experimental" ]; then proton_dir="${steam_path}/steamapps/common/Proton - Experimental"; fi
-if [ -d "${steam_path}/steamapps/common/Proton 7.0" ]; then proton_dir="${steam_path}/steamapps/common/Proton 7.0"; fi
-if [ -d "${steam_path}/compatibilitytools.d/GE-Proton7-43" ]; then proton_dir="${steam_path}/compatibilitytools.d/GE-Proton7-43"; fi # preferred version; more stable
+config_file="${steam_path}/steamapps/compatdata/322170/config_info"
+proton_dir=$(sed -n '2p' "$config_file") # get second line of config file
+temp_dir="$proton_dir"
+while true; do
+   current_directory=$(dirname "$temp_dir")
+   if [[ "$current_directory" =~ .*/steamapps/common$ ]] || [[ "$current_directory" =~ .*/compatibilitytools.d$ ]]; then
+      proton_dir="$temp_dir"
+      break
+   fi
+   if [[ "$current_directory" == "/" ]] || [[ "$current_directory" == "~/" ]]; then
+      echo "Could not find Proton directory: $proton_dir within config: $config_file"
+      exit 1
+   fi
+   temp_dir="$current_directory"
+done
 
-if [ ! -d "${proton_dir}" ]; then
-   echo "You dont have Proton Experimental, Proton 7.0 or GE-Proton7-43 installed!"
-   echo "Please set Geometry Dash to use either one of those versions (GE preferred)"
-   echo "To do that, go to GD's Steam page, click \"Properties\" > \"Compatibility\", enable \"Force the use of a specific Steam Play compatibility tool\" and select Proton 7.0 or Proton Experimental!"
-   echo "Proton GE has to be installed manually, use Proton 7.0 or Experimental if you are unsure how to do that."
-   echo "You have to start Geometry Dash at least once after changing it for Steam to download the new Proton version."
-   exit 1
-fi
 
-echo "Using ${proton_dir}"
+echo "Using Proton: ${proton_dir}"
 
 # clear temporary files
 rm -rf "/tmp/megahack" 2>/dev/null
