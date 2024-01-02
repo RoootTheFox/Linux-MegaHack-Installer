@@ -24,7 +24,11 @@ echo "(most terminals support drag and drop)"
 
 # if fzf is installed, use it
 if hash fzf 2>/dev/null; then
+    pdir=$(pwd)
+    cd ~ # we want fzf to use the home directory
     megahack_zip=$(fzf --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip file: ")
+    megahack_zip=$(realpath "$megahack_zip")
+    cd "$pdir"
 else
     read -p "Please enter the path to your MegaHack .zip file: " megahack_zip
 fi
