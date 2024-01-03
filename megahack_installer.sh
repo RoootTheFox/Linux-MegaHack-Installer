@@ -103,7 +103,16 @@ fi
 if ! [ -d "$possible_path" ]; then
     warn "Steam is not running, couldn't find directory from process"
     warn "Searching manually, this can take a few seconds ..."
-    possible_path=$(find ~ -name 'steamapps' | grep -v compatdata | sed 's/steamapps//g')
+
+    if hash fd; then
+        info "found fd, using it instead of find"
+        possible_paths=$(fd -a -s -H 'steamapps' --base-directory ~ | grep 'steamapps$\|steamapps/$')
+    else
+        possible_paths=$(find ~ -path '*/.cache*' -prune -o -name 'steamapps' -print 2>/dev/null)
+    fi
+
+    possible_paths=$(echo "${possible_paths}" | grep -v 'compatdata\|Program Files (x86)/Steam')
+    possible_path=$(echo "$possible_paths" | head -n1 | sed 's/steamapps//g' | sed 's/\/\/$/\//g')
 fi
 
 function prompt_steam_path() {
