@@ -74,7 +74,7 @@ if hash fzf 2>/dev/null; then
     if hash fd 2>/dev/null; then
         export FZF_DEFAULT_COMMAND="fd --extension=zip"
     else
-        export FZF_DEFAULT_COMMAND="find . -iname '*.zip'"
+        export FZF_DEFAULT_COMMAND="find . -path '*/.*' -prune -o -iname '*.zip' -print"
     fi
 
     megahack_zip=$(fzf -e --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip file: ")
