@@ -2,6 +2,10 @@
 
 Install script to install MegaHack on Linux
 
+>[!NOTE]
+>The latest bugfix update for Geometry dash (2.201) made it so megahack is currently not supported
+>Once megahack supports the new update, the script should work again
+
 ## Requirements
 
 - You need the following packages: unzip, (optional: xclip)
