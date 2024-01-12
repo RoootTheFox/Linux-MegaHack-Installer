@@ -223,7 +223,7 @@ echo
 info "To install, press CTRL+V when you are in the exe selection window and click \"Open\""
 
 # copy path to gd exe
-gd_exe_path="Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe"
+gd_exe_path=$(echo "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe" | sed 's:/:\\:g')
 
 info "Path to GD exe: ${gd_exe_path}"
 
