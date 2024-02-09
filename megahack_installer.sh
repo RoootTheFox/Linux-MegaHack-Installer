@@ -55,8 +55,13 @@ fi
 
 # check for required packages
 missing_packages=false
+clipboard=true
 if ! hash unzip 2>/dev/null; then error "unzip is not installed!"; missing_packages=true; fi
-if ! hash xclip 2>/dev/null; then warn "xclip is not installed, you will have to manually copy the MegaHack path!"; fi
+if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
+	if ! hash xclip 2>/dev/null; then warn "xclip is not installed, you will have to manually copy the MegaHack path!"; clipboard=false; fi
+else
+	if ! hash wl-copy 2>/dev/null; then warn "wl-clipboard is not installed, you will have to manually copy the MegaHack path!"; clipboard=false; fi
+fi
 
 echo
 if [ $missing_packages == true ] ; then
@@ -227,12 +232,22 @@ gd_exe_path=$(echo "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.
 
 info "Path to GD exe: ${gd_exe_path}"
 
-if hash xclip 2>/dev/null; then
-    echo "$gd_exe_path" | xclip -selection c
-    success "Copied path to clipboard!"
+if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
+	if hash xclip 2>/dev/null; then
+		echo "$gd_exe_path" | xclip -selection c
+    		success "Copied path to clipboard!"
+	else
+	warn "xclip is not installed, please copy the path manually"
+	fi
 else
-    warn "xclip is not installed, please copy the path manually"
+	if hash wl-copy 2>/dev/null; then
+		echo "$gd_exe_path" | wl-copy
+		success "Copied path to clipboard!"
+	else
+	warn "wl-clipboard is not installed, please copy the path manually"
+    fi
 fi
+
 echo
 
 warn "If you want to install MegaHack v7, you will either have to"
