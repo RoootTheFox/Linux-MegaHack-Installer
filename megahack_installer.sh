@@ -55,12 +55,11 @@ fi
 
 # check for required packages
 missing_packages=false
-clipboard=true
 if ! hash unzip 2>/dev/null; then error "unzip is not installed!"; missing_packages=true; fi
 if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
-	if ! hash xclip 2>/dev/null; then warn "xclip is not installed, you will have to manually copy the MegaHack path!"; clipboard=false; fi
+	if ! hash xclip 2>/dev/null; then warn "xclip is not installed, you will have to manually copy the MegaHack path!"; fi
 else
-	if ! hash wl-copy 2>/dev/null; then warn "wl-clipboard is not installed, you will have to manually copy the MegaHack path!"; clipboard=false; fi
+	if ! hash wl-copy 2>/dev/null; then warn "wl-clipboard is not installed, you will have to manually copy the MegaHack path!"; fi
 fi
 
 echo
