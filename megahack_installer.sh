@@ -72,8 +72,7 @@ fi
 
 # if fzf is installed, use it
 if hash fzf 2>/dev/null; then
-    pdir=$(pwd)
-    cd ~ || cd_fail # we want fzf to use the home directory
+    pushd ~ || cd_fail # we want fzf to use the home directory
 
     if hash fd 2>/dev/null; then
         export FZF_DEFAULT_COMMAND="fd --extension=zip"
@@ -83,7 +82,7 @@ if hash fzf 2>/dev/null; then
 
     megahack_zip=$(fzf -e --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip file: ")
     megahack_zip=$(realpath "$megahack_zip")
-    cd "$pdir" || cd_fail
+    popd || cd_fail
 else
     info "Please enter the path to your MegaHack .zip file"
     info "(most terminals support drag and drop)"
@@ -220,7 +219,7 @@ echo
 info " - Starting installation process - "
 
 if [ "$DEBUG" == "1" ]; then echo "cd ${steam_path}/steamapps/compatdata/322170/pfx"; fi
-cd "${steam_path}/steamapps/compatdata/322170/pfx"
+cd "${steam_path}/steamapps/compatdata/322170/pfx" || cd_fail
 
 info "Starting MegaHack installer ..."
 echo
@@ -268,7 +267,7 @@ STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$
 if [ "$use_v6_libcurl" == "1" ]; then
     warn "using v6's libcurl.dll to load!"
     # this allows megahack v7 to load
-    cd "${steam_path}/steamapps/common/Geometry Dash"
+    cd "${steam_path}/steamapps/common/Geometry Dash" || cd_fail
     rm libcurl.dll
     info "Downloading v6 libcurl.dll"
     wget -O "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
