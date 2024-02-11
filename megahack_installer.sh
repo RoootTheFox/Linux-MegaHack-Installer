@@ -55,15 +55,16 @@ fi
 
 # check for required packages
 missing_packages=false
-if ! hash unzip 2>/dev/null; then error "unzip is not installed!"; missing_packages=true; fi
+[ ! -x "$(command -v wget)" ] && error "wget is not installed!" && missing_packages=true # some distros don't ship wget by default
+[ ! -x "$(command -v unzip)" ] && error "unzip is not installed!" && missing_packages=true
 if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
-	if ! hash xclip 2>/dev/null; then warn "xclip is not installed, you will have to manually copy the MegaHack path!"; fi
+    [ ! -x "$(command -v xclip)" ] && warn "xclip is not installed, you will have to manually copy the MegaHack path!"
 else
-	if ! hash wl-copy 2>/dev/null; then warn "wl-clipboard is not installed, you will have to manually copy the MegaHack path!"; fi
+    [ ! -x "$(command -v wl-copy)" ] && warn "wl-clipboard is not installed, you will have to manually copy the MegaHack path!"
 fi
 
-echo
-if [ $missing_packages == true ] ; then
+printf "\n"
+if [ $missing_packages == true ]; then
     error "You are missing some programs."
     error "Please install them using your distro's package manager to continue."
     error "Additional information can be found above."
@@ -71,17 +72,13 @@ if [ $missing_packages == true ] ; then
 fi
 
 # if fzf is installed, use it
-if hash fzf 2>/dev/null; then
+if [ -x "$(command -v fzf)" ]; then
     pushd ~ || cd_fail # we want fzf to use the home directory
 
-    if hash fd 2>/dev/null; then
-        export FZF_DEFAULT_COMMAND="fd --extension=zip"
-    else
-        export FZF_DEFAULT_COMMAND="find . -path '*/.*' -prune -o -iname '*.zip' -print"
-    fi
+    [ "$(command -v fd)" ] && export FZF_DEFAULT_COMMAND="fd --extension=zip" || export FZF_DEFAULT_COMMAND="find . -path '*/.*' -prune -o -iname '*.zip' -print"
 
-    megahack_zip=$(fzf -e --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip file: ")
-    megahack_zip=$(realpath "$megahack_zip")
+    megahack_zip="$(fzf -e --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip file: ")"
+    megahack_zip="$(realpath "$megahack_zip")"
     popd || cd_fail
 else
     info "Please enter the path to your MegaHack .zip file"
@@ -89,45 +86,42 @@ else
     read -p "> " megahack_zip
 fi
 
-echo
-if ! [ -f "$megahack_zip" ]; then
-    fatal "Could not find the file you specified!"
-fi
+printf "\n"
+[ ! -f "$megahack_zip" ] && fatal "Could not find the file you specified!"
 
-megahack_zip=$(realpath "$megahack_zip")
+megahack_zip="$(realpath "$megahack_zip")"
 
-echo "Finding your steam path ..."
+printf "Finding your steam path ...\n"
 if [ -f "$HOME/.steampid" ]; then
     steam_pid=$(cat "$HOME/.steampid")
     info "Steam PID: $steam_pid"
     possible_path=$(readlink -e "/proc/$steam_pid/cwd")
 fi
 
-if ! [ -d "$possible_path" ]; then
+if [ ! -d "$possible_path" ]; then
     warn "Steam is not running, couldn't find directory from process"
     warn "Searching manually, this can take a few seconds ..."
 
-    if hash fd; then
+    if [ -x "$(command -v fd)" ]; then
         info "found fd, using it instead of find"
         possible_paths=$(fd -a -s -H 'steamapps' --base-directory ~ | grep 'steamapps$\|steamapps/$')
     else
         possible_paths=$(find ~ -path '*/.cache*' -prune -o -name 'steamapps' -print 2>/dev/null)
     fi
 
-    possible_paths=$(echo "${possible_paths}" | grep -v 'compatdata\|Program Files (x86)/Steam')
-    possible_path=$(echo "$possible_paths" | head -n1 | sed 's/steamapps//g' | sed 's/\/\/$/\//g')
+    possible_paths=$(printf "${possible_paths}\n" | grep -v 'compatdata\|Program Files (x86)/Steam')
+    possible_path=$(printf "${possible_paths}\n" | head -n1 | sed 's/steamapps//g; s/\/\/$/\//g')
 fi
 
 function prompt_steam_path() {
-    echo
+    printf "\n"
     read -p "Please enter your Steam path: " in_path
     steam_path="$in_path"
 }
 
 steam_path=""
 if [ -n "$possible_path" ]; then
-    echo "Is this your Steam path?: $possible_path"
-    echo
+    printf "Is this your Steam path?: ${possible_path}\n\n"
     read -p "[Y/n] :" answer
     if [ "${answer,,}" == "y" ] || [ "${answer}" == "" ]; then
         steam_path="$possible_path"
@@ -189,9 +183,9 @@ fi
 # find out where megahack is
 megahack_dir=$(ls /tmp/megahack)
 if [ "$DEBUG" == "1" ]; then
-    echo "-- contents of /tmp/megahack --"
-    echo "$megahack_dir"
-    echo "-- -- -- -- -- - -- -- -- -- --"
+    printf "-- contents of /tmp/megahack --\n"
+    printf "$megahack_dir\n"
+    printf "-- -- -- -- -- - -- -- -- -- --\n"
 fi
 
 megahack_dir="/tmp/megahack/$megahack_dir"
@@ -199,13 +193,13 @@ megahack_dir="/tmp/megahack/$megahack_dir"
 megahack_dir_contents=$(ls "$megahack_dir")
 
 if [ "$DEBUG" == "1" ]; then
-    echo "MegaHack Directory: $megahack_dir"
-    echo " -- Contents --"
-    echo "$megahack_dir_contents"
-    echo " -- -- -- -- --"
+    printf "MegaHack Directory: $megahack_dir\n"
+    printf " -- Contents --\n"
+    printf "$megahack_dir_contents\n"
+    printf " -- -- -- -- --\n"
 fi
 
-megahack_exe=$(echo "$megahack_dir_contents" | grep ".exe")
+megahack_exe=$(printf "$megahack_dir_contents\n" | grep ".exe")
 
 if [ -z "$megahack_exe" ]; then
     fatal "there's no executable in the provided zip file!"
@@ -214,39 +208,39 @@ fi
 success "Extracted MegaHack"
 info "Directory: $megahack_dir"
 info "Installer Executable: $megahack_exe"
-echo
+printf "\n"
 
 info " - Starting installation process - "
 
-if [ "$DEBUG" == "1" ]; then echo "cd ${steam_path}/steamapps/compatdata/322170/pfx"; fi
+[ "$DEBUG" == "1" ] && printf "cd ${steam_path}/steamapps/compatdata/322170/pfx"
 cd "${steam_path}/steamapps/compatdata/322170/pfx" || cd_fail
 
 info "Starting MegaHack installer ..."
-echo
+printf "\n"
 info "To install, press CTRL+V when you are in the exe selection window and click \"Open\""
 
 # copy path to gd exe
-gd_exe_path=$(echo "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe" | sed 's:/:\\:g')
+gd_exe_path=$(printf "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe\n" | sed 's:/:\\:g')
 
 info "Path to GD exe: ${gd_exe_path}"
 
 if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
-	if hash xclip 2>/dev/null; then
-		echo "$gd_exe_path" | xclip -selection c
+    if [ -x "$(command -v xclip)" ]; then
+		printf "$gd_exe_path\n" | xclip -selection c
     		success "Copied path to clipboard!"
 	else
-	warn "xclip is not installed, please copy the path manually"
+        warn "xclip is not installed, please copy the path manually"
 	fi
 else
-	if hash wl-copy 2>/dev/null; then
-		echo "$gd_exe_path" | wl-copy
+    if [ -x "$(command -v wl-copy)" ]; then
+		printf "$gd_exe_path\n" | wl-copy
 		success "Copied path to clipboard!"
 	else
-	warn "wl-clipboard is not installed, please copy the path manually"
+        warn "wl-clipboard is not installed, please copy the path manually"
     fi
 fi
 
-echo
+printf "\n"
 
 warn "If you want to install MegaHack v7, you will either have to"
 warn "use MHv6's libcurl.dll OR add 'WINEDLLOVERRIDES=\"Xinput9_1_0=n,b\" %command%'"
@@ -258,8 +252,8 @@ if [ "${answer_libcurl,,}" == "y" ] || [ "${answer_libcurl}" == "" ]; then
 fi
 
 if [ "$DEBUG" == "1" ]; then
-    echo "Starting MegaHack:"
-    echo "STEAM_COMPAT_DATA_PATH=\"${steam_path}/steamapps/compatdata/322170\" WINEPREFIX=\"$PWD\" \"${proton_dir}/proton\" runinprefix \"${megahack_dir}/${megahack_exe}\""
+    printf "Starting MegaHack:\n"
+    printf "STEAM_COMPAT_DATA_PATH=\"${steam_path}/steamapps/compatdata/322170\" WINEPREFIX=\"$PWD\" \"${proton_dir}/proton\" runinprefix \"${megahack_dir}/${megahack_exe}\"\n"
 fi
 
 STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${proton_dir}/proton" runinprefix "${megahack_dir}/${megahack_exe}"
@@ -270,18 +264,18 @@ if [ "$use_v6_libcurl" == "1" ]; then
     cd "${steam_path}/steamapps/common/Geometry Dash" || cd_fail
     rm libcurl.dll
     info "Downloading v6 libcurl.dll"
-    wget -O "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
+    wget -qO "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
     cp "/tmp/megahack/libcurl.dll" .
     mv hackproldr.dll absoluteldr.dll
 fi
 
-echo
+printf "\n"
 info "Cleaning up ..."
 rm -rf "/tmp/megahack" 2>/dev/null
-echo
+printf "\n"
 success "If you followed the steps in the installer, MegaHack Pro should now be installed!"
 success "Have fun!" 1
-echo
+printf "\n"
 
 sleep 0.2
 exit 0
