@@ -89,7 +89,7 @@ if [ ! -x "$(command -v wget)" ] && [ ! -x "$(command -v curl)" ]; then
     info "(you can ignore this warning if you want to use the newer Xinput9_1_0 method)"
     warn "do you want to continue?"
 
-    read -p "[Y/n] :" answer
+    read -r -p "[Y/n] :" answer
     if [ "${answer,,}" != "y" ] && [ "${answer}" != "" ]; then
         info "please install either curl or wget to continue"
         exit 0
@@ -127,7 +127,7 @@ if [ -x "$(command -v fzf)" ]; then
 else
     info "Please enter the path to your MegaHack .zip file"
     info "(most terminals support drag and drop)"
-    read -p "> " megahack_zip
+    read -r -p "> " megahack_zip
 fi
 
 printf "\n"
@@ -159,14 +159,14 @@ fi
 
 function prompt_steam_path() {
     printf "\n"
-    read -p "Please enter your Steam path: " in_path
+    read -r -p "Please enter your Steam path: " in_path
     steam_path="$in_path"
 }
 
 steam_path=""
 if [ -n "$possible_path" ]; then
     printf "Is this your Steam path?: %s\n\n" "${possible_path}"
-    read -p "[Y/n] :" answer
+    read -r -p "[Y/n] :" answer
     if [ "${answer,,}" == "y" ] || [ "${answer}" == "" ]; then
         steam_path="$possible_path"
     fi
@@ -294,7 +294,7 @@ else
     print_xinput_instructions
 
     warn "Do you want to use the DEPRECATED v6 libcurl.dll method?"
-    read -p "[y/N] :" answer_libcurl
+    read -r -p "[y/N] :" answer_libcurl
     if [ "${answer_libcurl,,}" == "y" ]; then
         use_v6_libcurl=1
     fi
