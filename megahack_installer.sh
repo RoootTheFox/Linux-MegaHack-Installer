@@ -75,7 +75,11 @@ fi
 if [ -x "$(command -v fzf)" ]; then
     pushd ~ || cd_fail # we want fzf to use the home directory
 
-    [ "$(command -v fd)" ] && export FZF_DEFAULT_COMMAND="fd --extension=zip" || export FZF_DEFAULT_COMMAND="find . -path '*/.*' -prune -o -iname '*.zip' -print"
+    if [ "$(command -v fd)" ]; then
+        export FZF_DEFAULT_COMMAND="fd --extension=zip"
+    else
+        export FZF_DEFAULT_COMMAND="find . -path '*/.*' -prune -o -iname '*.zip' -print"
+    fi
 
     megahack_zip="$(fzf -e --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip file: ")"
     megahack_zip="$(realpath "$megahack_zip")"
