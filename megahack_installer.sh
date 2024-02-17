@@ -47,6 +47,28 @@ success() {
     fi
 }
 
+function copy_to_clipboard() {
+    CLIPBOARD_COMMAND=""
+    if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
+        if [ -x "$(command -v xclip)" ]; then
+            CLIPBOARD_COMMAND="xclip -selection c"
+	    else
+            warn "xclip is not installed, please copy content manually"
+	    fi
+    else
+        if [ -x "$(command -v wl-copy)" ]; then
+            CLIPBOARD_COMMAND="wl-copy"
+	    else
+            warn "wl-clipboard is not installed, please copy content manually"
+        fi
+    fi
+
+    if [ -n "$CLIPBOARD_COMMAND" ]; then
+        printf "%s" "$1" | $CLIPBOARD_COMMAND
+        success "Copied to clipboard!"
+    fi
+}
+
 printf "${LIME}%s${RESET}\n" "MegaHack Installer for Linux"
 
 if [ "$DEBUG" == "1" ]; then
@@ -55,7 +77,25 @@ fi
 
 # check for required packages
 missing_packages=false
-[ ! -x "$(command -v wget)" ] && error "wget is not installed!" && missing_packages=true # some distros don't ship wget by default
+download_tool_missing=false
+if [ ! -x "$(command -v wget)" ] && [ ! -x "$(command -v curl)" ]; then
+    download_tool_missing=true
+
+    warn "neither wget nor curl are installed!"
+    warn "you will be unable to use the deprecated v6 libcurl.dll method!"
+    warn "note that this method is deprecated and will be removed in the future"
+    info "The newer Xinput9_1_0 method requires you to add a start argument"
+    info "to Geometry Dash, which will be explained later."
+    info "(you can ignore this warning if you want to use the newer Xinput9_1_0 method)"
+    warn "do you want to continue?"
+
+    read -p "[Y/n] :" answer
+    if [ "${answer,,}" != "y" ] && [ "${answer}" != "" ]; then
+        info "please install either curl or wget to continue"
+        exit 0
+    fi
+fi
+
 [ ! -x "$(command -v unzip)" ] && error "unzip is not installed!" && missing_packages=true
 if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
     [ ! -x "$(command -v xclip)" ] && warn "xclip is not installed, you will have to manually copy the MegaHack path!"
@@ -228,31 +268,36 @@ gd_exe_path=$(printf "%s" "Z:${steam_path}/steamapps/common/Geometry Dash/Geomet
 
 info "Path to GD exe: ${gd_exe_path}"
 
-if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
-    if [ -x "$(command -v xclip)" ]; then
-		printf "%s" "$gd_exe_path" | xclip -selection c
-    		success "Copied path to clipboard!"
-	else
-        warn "xclip is not installed, please copy the path manually"
-	fi
-else
-    if [ -x "$(command -v wl-copy)" ]; then
-		printf "%s" "$gd_exe_path" | wl-copy
-		success "Copied path to clipboard!"
-	else
-        warn "wl-clipboard is not installed, please copy the path manually"
-    fi
-fi
+copy_to_clipboard "$gd_exe_path"
 
 printf "\n"
 
-warn "If you want to install MegaHack v7, you will either have to"
-warn "use MHv6's libcurl.dll OR add 'WINEDLLOVERRIDES=\"Xinput9_1_0=n,b\" %command%'"
-warn "to Geometry Dash's start options in Steam OR MEGAHACK WON'T WORK!"
-warn "Do you wan't to use v6's libcurl.dll method?"
-read -p "[Y/n] :" answer_libcurl
-if [ "${answer_libcurl,,}" == "y" ] || [ "${answer_libcurl}" == "" ]; then
-    use_v6_libcurl=1
+function print_xinput_instructions() {
+    info "to use to Xinput9_1_0 method, you will have to add a launch argument"
+    info "to Geometry Dash in the Steam launch options."
+    info "To do this, right-click Geometry Dash in your Steam library and"
+    info "click 'Properties'. A window will open, with a text box labeled"
+    info "'Launch Options' (under 'General') Copy the following into the text box:"
+    info "WINEDLLOVERRIDES=\"Xinput9_1_0=n,b\" %command%"
+}
+
+if [ "$download_tool_missing" == "true" ]; then
+    info "you are missing a download tool (curl or wget)"
+    info "and will therefore be unable to use the deprecated v6 libcurl.dll method"
+    print_xinput_instructions
+    use_v6_libcurl=0
+else
+    warn "If you want to install MegaHack v7, you will either have to"
+    warn "use MHv6's libcurl.dll OR use the newer Xinput9_1_0 method,"
+    warn "which requires you to add a start argument to GD."
+    warn "It is recommended to use the newer Xinput9_1_0 method:"
+    print_xinput_instructions
+
+    warn "Do you want to use the DEPRECATED v6 libcurl.dll method?"
+    read -p "[y/N] :" answer_libcurl
+    if [ "${answer_libcurl,,}" == "y" ]; then
+        use_v6_libcurl=1
+    fi
 fi
 
 if [ "$DEBUG" == "1" ]; then
@@ -268,9 +313,17 @@ if [ "$use_v6_libcurl" == "1" ]; then
     cd "${steam_path}/steamapps/common/Geometry Dash" || cd_fail
     rm libcurl.dll
     info "Downloading v6 libcurl.dll"
-    wget -qO "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
+    if [ -x "$(command -v curl)" ]; then
+        curl -s -o "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
+    else
+        wget -qO "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
+    fi
     cp "/tmp/megahack/libcurl.dll" .
     mv hackproldr.dll absoluteldr.dll
+else
+    info "using Xinput9_1_0 method"
+    print_xinput_instructions
+    copy_to_clipboard "WINEDLLOVERRIDES=\"Xinput9_1_0=n,b\" %command%"
 fi
 
 printf "\n"
