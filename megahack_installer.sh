@@ -109,8 +109,8 @@ if [ ! -d "$possible_path" ]; then
         possible_paths=$(find ~ -path '*/.cache*' -prune -o -name 'steamapps' -print 2>/dev/null)
     fi
 
-    possible_paths=$(printf "${possible_paths}\n" | grep -v 'compatdata\|Program Files (x86)/Steam')
-    possible_path=$(printf "${possible_paths}\n" | head -n1 | sed 's/steamapps//g; s/\/\/$/\//g')
+    possible_paths=$(printf "%s" "${possible_paths}" | grep -v 'compatdata\|Program Files (x86)/Steam')
+    possible_path=$(printf "%s" "${possible_paths}" | head -n1 | sed 's/steamapps//g; s/\/\/$/\//g')
 fi
 
 function prompt_steam_path() {
@@ -121,7 +121,7 @@ function prompt_steam_path() {
 
 steam_path=""
 if [ -n "$possible_path" ]; then
-    printf "Is this your Steam path?: ${possible_path}\n\n"
+    printf "Is this your Steam path?: %s\n\n" "${possible_path}"
     read -p "[Y/n] :" answer
     if [ "${answer,,}" == "y" ] || [ "${answer}" == "" ]; then
         steam_path="$possible_path"
@@ -184,7 +184,7 @@ fi
 megahack_dir=$(ls /tmp/megahack)
 if [ "$DEBUG" == "1" ]; then
     printf "-- contents of /tmp/megahack --\n"
-    printf "$megahack_dir\n"
+    printf "%s\n" "$megahack_dir"
     printf "-- -- -- -- -- - -- -- -- -- --\n"
 fi
 
@@ -193,13 +193,13 @@ megahack_dir="/tmp/megahack/$megahack_dir"
 megahack_dir_contents=$(ls "$megahack_dir")
 
 if [ "$DEBUG" == "1" ]; then
-    printf "MegaHack Directory: $megahack_dir\n"
+    printf "MegaHack Directory: %s\n" "$megahack_dir"
     printf " -- Contents --\n"
-    printf "$megahack_dir_contents\n"
+    printf "%s\n" "$megahack_dir_contents"
     printf " -- -- -- -- --\n"
 fi
 
-megahack_exe=$(printf "$megahack_dir_contents\n" | grep ".exe")
+megahack_exe=$(printf "%s" "$megahack_dir_contents" | grep ".exe")
 
 if [ -z "$megahack_exe" ]; then
     fatal "there's no executable in the provided zip file!"
@@ -212,7 +212,7 @@ printf "\n"
 
 info " - Starting installation process - "
 
-[ "$DEBUG" == "1" ] && printf "cd ${steam_path}/steamapps/compatdata/322170/pfx"
+[ "$DEBUG" == "1" ] && printf "cd %s\n" "${steam_path}/steamapps/compatdata/322170/pfx"
 cd "${steam_path}/steamapps/compatdata/322170/pfx" || cd_fail
 
 info "Starting MegaHack installer ..."
@@ -220,20 +220,20 @@ printf "\n"
 info "To install, press CTRL+V when you are in the exe selection window and click \"Open\""
 
 # copy path to gd exe
-gd_exe_path=$(printf "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe\n" | sed 's:/:\\:g')
+gd_exe_path=$(printf "%s" "Z:${steam_path}/steamapps/common/Geometry Dash/GeometryDash.exe" | sed 's:/:\\:g')
 
 info "Path to GD exe: ${gd_exe_path}"
 
 if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
     if [ -x "$(command -v xclip)" ]; then
-		printf "$gd_exe_path\n" | xclip -selection c
+		printf "%s" "$gd_exe_path" | xclip -selection c
     		success "Copied path to clipboard!"
 	else
         warn "xclip is not installed, please copy the path manually"
 	fi
 else
     if [ -x "$(command -v wl-copy)" ]; then
-		printf "$gd_exe_path\n" | wl-copy
+		printf "%s" "$gd_exe_path" | wl-copy
 		success "Copied path to clipboard!"
 	else
         warn "wl-clipboard is not installed, please copy the path manually"
@@ -253,7 +253,7 @@ fi
 
 if [ "$DEBUG" == "1" ]; then
     printf "Starting MegaHack:\n"
-    printf "STEAM_COMPAT_DATA_PATH=\"${steam_path}/steamapps/compatdata/322170\" WINEPREFIX=\"$PWD\" \"${proton_dir}/proton\" runinprefix \"${megahack_dir}/${megahack_exe}\"\n"
+    printf "STEAM_COMPAT_DATA_PATH=\"%s\" WINEPREFIX=\"%s\" \"%s\" runinprefix \"%s\"\n" "${steam_path}/steamapps/compatdata/322170" "$PWD" "${proton_dir}/proton" "${megahack_dir}/${megahack_exe}"
 fi
 
 STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${proton_dir}/proton" runinprefix "${megahack_dir}/${megahack_exe}"
