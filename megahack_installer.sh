@@ -77,24 +77,6 @@ fi
 
 # check for required packages
 missing_packages=false
-download_tool_missing=false
-if [ ! -x "$(command -v wget)" ] && [ ! -x "$(command -v curl)" ]; then
-    download_tool_missing=true
-
-    warn "neither wget nor curl are installed!"
-    warn "you will be unable to use the deprecated v6 libcurl.dll method!"
-    warn "note that this method is deprecated and will be removed in the future"
-    info "The newer Xinput9_1_0 method requires you to add a start argument"
-    info "to Geometry Dash, which will be explained later."
-    info "(you can ignore this warning if you want to use the newer Xinput9_1_0 method)"
-    warn "do you want to continue?"
-
-    read -r -p "[Y/n] :" answer
-    if [ "${answer,,}" != "y" ] && [ "${answer}" != "" ]; then
-        info "please install either curl or wget to continue"
-        exit 0
-    fi
-fi
 
 [ ! -x "$(command -v unzip)" ] && error "unzip is not installed!" && missing_packages=true
 if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
@@ -273,32 +255,22 @@ copy_to_clipboard "$gd_exe_path"
 printf "\n"
 
 function print_xinput_instructions() {
-    info "to use to Xinput9_1_0 method, you will have to add a launch argument"
-    info "to Geometry Dash in the Steam launch options."
+    warn "to use MegaHack, you will have to add a launch argument to Geometry Dash"
+    warn "in the Steam launch options. (ELSE MEGAHACK WON'T WORK!)"
     info "To do this, right-click Geometry Dash in your Steam library and"
     info "click 'Properties'. A window will open, with a text box labeled"
     info "'Launch Options' (under 'General') Copy the following into the text box:"
-    info "WINEDLLOVERRIDES=\"Xinput9_1_0=n,b\" %command%"
+    info "WINEDLLOVERRIDES=\"Xinput1_4=n,b\" %command%"
 }
 
-if [ "$download_tool_missing" == "true" ]; then
-    info "you are missing a download tool (curl or wget)"
-    info "and will therefore be unable to use the deprecated v6 libcurl.dll method"
-    print_xinput_instructions
-    use_v6_libcurl=0
-else
-    warn "If you want to install MegaHack v7, you will either have to"
-    warn "use MHv6's libcurl.dll OR use the newer Xinput9_1_0 method,"
-    warn "which requires you to add a start argument to GD."
-    warn "It is recommended to use the newer Xinput9_1_0 method:"
-    print_xinput_instructions
+print_xinput_instructions
+warn "if you're using a GD install older than 2.206, you'll need"
+info "to use an OLDER version of this script - see the readme for details:"
+info "https://github.com/RoootTheFox/Linux-MegaHack-Installer"
 
-    warn "Do you want to use the DEPRECATED v6 libcurl.dll method?"
-    read -r -p "[y/N] :" answer_libcurl
-    if [ "${answer_libcurl,,}" == "y" ]; then
-        use_v6_libcurl=1
-    fi
-fi
+# give user a chance to notice this warning
+# todo: use `read` and prompt user into simply pressing enter
+sleep 0.5
 
 if [ "$DEBUG" == "1" ]; then
     printf "Starting MegaHack:\n"
@@ -307,24 +279,9 @@ fi
 
 STEAM_COMPAT_DATA_PATH="${steam_path}/steamapps/compatdata/322170" WINEPREFIX="$PWD" "${proton_dir}/proton" runinprefix "${megahack_dir}/${megahack_exe}"
 
-if [ "$use_v6_libcurl" == "1" ]; then
-    warn "using v6's libcurl.dll to load!"
-    # this allows megahack v7 to load
-    cd "${steam_path}/steamapps/common/Geometry Dash" || cd_fail
-    rm libcurl.dll
-    info "Downloading v6 libcurl.dll"
-    if [ -x "$(command -v curl)" ]; then
-        curl -s -o "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
-    else
-        wget -qO "/tmp/megahack/libcurl.dll" "https://raw.githubusercontent.com/RoootTheFox/Linux-MegaHack-Installer/main/libcurl.dll"
-    fi
-    cp "/tmp/megahack/libcurl.dll" .
-    mv hackproldr.dll absoluteldr.dll
-else
-    info "using Xinput9_1_0 method"
-    print_xinput_instructions
-    copy_to_clipboard "WINEDLLOVERRIDES=\"Xinput9_1_0=n,b\" %command%"
-fi
+print_xinput_instructions
+copy_to_clipboard "WINEDLLOVERRIDES=\"Xinput1_4=n,b\" %command%"
+sleep 1 # give the user a chance to notice the warning above
 
 printf "\n"
 info "Cleaning up ..."
