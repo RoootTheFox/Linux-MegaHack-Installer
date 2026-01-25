@@ -98,24 +98,24 @@ if [ -x "$(command -v fzf)" ]; then
     pushd ~ || cd_fail # we want fzf to use the home directory
 
     if [ "$(command -v fd)" ]; then
-        export FZF_DEFAULT_COMMAND="fd --extension=zip"
+        export FZF_DEFAULT_COMMAND="fd --extension=zip --extension=exe"
     else
         export FZF_DEFAULT_COMMAND="find . -path '*/.*' -prune -o -iname '*.zip' -print"
     fi
 
-    megahack_zip="$(fzf -e --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip file: ")"
-    megahack_zip="$(realpath "$megahack_zip")"
+    megahack_installer="$(fzf -e --header="MegaHack Installer.zip selection" --prompt="Please enter the path to your MegaHack .zip/.exe file: ")"
+    megahack_installer="$(realpath "$megahack_installer")"
     popd || cd_fail
 else
-    info "Please enter the path to your MegaHack .zip file"
+    info "Please enter the path to your MegaHack .zip/.exe file"
     info "(most terminals support drag and drop)"
-    read -r -p "> " megahack_zip
+    read -r -p "> " megahack_installer
 fi
 
 printf "\n"
-[ ! -f "$megahack_zip" ] && fatal "Could not find the file you specified!"
+[ ! -f "$megahack_installer" ] && fatal "Could not find the file you specified!"
 
-megahack_zip="$(realpath "$megahack_zip")"
+megahack_installer="$(realpath "$megahack_installer")"
 
 printf "Finding your steam path ...\n"
 if [ -f "$HOME/.steampid" ]; then
@@ -198,34 +198,38 @@ info "Using Proton: ${proton_dir}"
 rm -rf "/tmp/megahack" 2>/dev/null
 mkdir "/tmp/megahack" 2>/dev/null
 
-info "Extracting MegaHack Patcher ..."
-info "$megahack_zip"
-if [[ $megahack_zip == *.zip ]]; then
-    unzip "$megahack_zip" -d /tmp/megahack
+info "$megahack_installer"
+if [[ $megahack_installer == *.zip ]]; then
+    info "Extracting MegaHack Patcher ..."
+    unzip "$megahack_installer" -d /tmp/megahack
+
+    # find out where megahack is
+    megahack_dir=$(ls /tmp/megahack)
+    if [ "$DEBUG" == "1" ]; then
+        printf "-- contents of /tmp/megahack --\n"
+        printf "%s\n" "$megahack_dir"
+        printf "-- -- -- -- -- - -- -- -- -- --\n"
+    fi
+    
+    megahack_dir="/tmp/megahack/$megahack_dir"
+    
+    megahack_dir_contents=$(ls "$megahack_dir")
+    
+    if [ "$DEBUG" == "1" ]; then
+        printf "MegaHack Directory: %s\n" "$megahack_dir"
+        printf " -- Contents --\n"
+        printf "%s\n" "$megahack_dir_contents"
+        printf " -- -- -- -- --\n"
+    fi
+
+    megahack_exe=$(printf "%s" "$megahack_dir_contents" | grep ".exe")
+elif [[ $megahack_installer == *.exe ]]; then
+    info "Not extracting megahack: single exe type installer"
+    megahack_exe="$megahack_installer"
 else
     fatal "unsupported file type - are you sure you're selecting a .zip file?"
 fi
 
-# find out where megahack is
-megahack_dir=$(ls /tmp/megahack)
-if [ "$DEBUG" == "1" ]; then
-    printf "-- contents of /tmp/megahack --\n"
-    printf "%s\n" "$megahack_dir"
-    printf "-- -- -- -- -- - -- -- -- -- --\n"
-fi
-
-megahack_dir="/tmp/megahack/$megahack_dir"
-
-megahack_dir_contents=$(ls "$megahack_dir")
-
-if [ "$DEBUG" == "1" ]; then
-    printf "MegaHack Directory: %s\n" "$megahack_dir"
-    printf " -- Contents --\n"
-    printf "%s\n" "$megahack_dir_contents"
-    printf " -- -- -- -- --\n"
-fi
-
-megahack_exe=$(printf "%s" "$megahack_dir_contents" | grep ".exe")
 
 if [ -z "$megahack_exe" ]; then
     fatal "there's no executable in the provided zip file!"
